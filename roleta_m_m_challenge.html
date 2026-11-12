@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M&M Challenge 4 U and Ur Bestie! - Roleta</title>
+  <!-- Fontes divertidas e legíveis do Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Paleta obrigatória */
+      --color-pink-red: #ef476f;
+      --color-orange: #f78c6b;
+      --color-yellow: #ffd166;
+      --color-green: #06d6a0;
+      --color-blue: #118ab2;
+      --color-dark: #073b4c;
+
+      /* Tons neutros derivados para suporte visual */
+      --bg-surface: #ffffff;
+      --bg-page: #f4f7f9;
+      --text-main: #073b4c;
+      --text-muted: #4a6b78;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-page);
+      background-image: 
+        radial-gradient(circle at 12% 18%, rgba(239, 71, 111, 0.08) 0%, transparent 25%),
+        radial-gradient(circle at 88% 15%, rgba(6, 214, 160, 0.1) 0%, transparent 28%),
+        radial-gradient(circle at 80% 85%, rgba(255, 209, 102, 0.14) 0%, transparent 30%),
+        radial-gradient(circle at 15% 82%, rgba(17, 138, 178, 0.09) 0%, transparent 25%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      padding: 1.25rem 1rem 2.5rem;
+    }
+
+    /* Canvas de Confetes */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Cabeçalho */
+    header {
+      text-align: center;
+      max-width: 780px;
+      width: 100%;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .top-controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .pill-btn {
+      background: var(--bg-surface);
+      border: 2px solid rgba(7, 59, 76, 0.12);
+      color: var(--color-dark);
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0.45rem 0.95rem;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(7, 59, 76, 0.06);
+    }
+
+    .pill-btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-blue);
+      box-shadow: 0 4px 12px rgba(7, 59, 76, 0.12);
+    }
+
+    .pill-btn.active {
+      background: var(--color-dark);
+      color: #ffffff;
+      border-color: var(--color-dark);
+    }
+
+    h1 {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.85rem, 4.5vw, 2.85rem);
+      line-height: 1.12;
+      color: var(--color-dark);
+      letter-spacing: -0.01em;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    h1 span.highlight-pink { color: var(--color-pink-red); }
+    h1 span.highlight-blue { color: var(--color-blue); }
+    h1 span.highlight-green { color: var(--color-green); }
+
+    .subtitle {
+      margin-top: 0.45rem;
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Layout Principal */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      max-width: 1080px;
+      width: 100%;
+      align-items: center;
+    }
+
+    @media (min-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 2.5rem;
+      }
+    }
+
+    /* Seção da Roleta */
+    .wheel-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .wheel-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      border-radius: 50%;
+      background: var(--color-dark);
+      box-shadow: 
+        0 18px 40px rgba(7, 59, 76, 0.24),
+        0 0 0 8px #ffffff,
+        0 0 0 12px rgba(7, 59, 76, 0.08);
+    }
+
+    /* Ponteiro / Marcador no topo */
+    .wheel-pointer {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      width: 46px;
+      height: 54px;
+      filter: drop-shadow(0 5px 8px rgba(7, 59, 76, 0.35));
+      transform-origin: 50% 18%;
+      transition: transform 0.08s ease-out;
+    }
+
+    .wheel-pointer.tick {
+      transform: translateX(-50%) rotate(-18deg);
+    }
+
+    #wheel-canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: block;
+      cursor: pointer;
+    }
+
+    /* Botão Central M&M */
+    .center-spin-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: var(--color-dark);
+      border: 5px solid #ffffff;
+      color: #ffffff;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      z-index: 15;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 
+        0 8px 20px rgba(7, 59, 76, 0.4),
+        inset 0 3px 6px rgba(255, 255, 255, 0.2);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s;
+      user-select: none;
+    }
+
+    .center-spin-btn:hover:not(:disabled) {
+      transform: translate(-50%, -50%) scale(1.08);
+      background: var(--color-pink-red);
+    }
+
+    .center-spin-btn:active:not(:disabled) {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+
+    .center-spin-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.92;
+    }
+
+    /* Botão Principal Abaixo da Roleta */
+    .main-spin-cta {
+      margin-top: 1.65rem;
+      background: linear-gradient(135deg, var(--color-pink-red), var(--color-orange));
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 1rem 2.4rem;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      box-shadow: 
+        0 10px 24px rgba(239, 71, 111, 0.35),
+        0 4px 0 #b8294b;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .main-spin-cta:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 
+        0 14px 28px rgba(239, 71, 111, 0.42),
+        0 6px 0 #b8294b;
+    }
+
+    .main-spin-cta:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 
+        0 4px 12px rgba(239, 71, 111, 0.3),
+        0 2px 0 #b8294b;
+    }
+
+    .main-spin-cta:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Card da Legenda dos M&M's */
+    .legend-card {
+      background: var(--bg-surface);
+      border-radius: 28px;
+      padding: 1.65rem;
+      box-shadow: 0 14px 35px rgba(7, 59, 76, 0.08);
+      border: 2px solid rgba(7, 59, 76, 0.06);
+    }
+
+    .legend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.15rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px dashed rgba(7, 59, 76, 0.1);
+    }
+
+    .legend-header h2 {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 1.35rem;
+      color: var(--color-dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .legend-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.95rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 18px;
+      background: #f8fafc;
+      border: 2px solid transparent;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .legend-item:hover {
+      background: #ffffff;
+      border-color: rgba(7, 59, 76, 0.15);
+      transform: translateX(4px);
+    }
+
+    .legend-item.active-winner {
+      background: #ffffff;
+      border-color: var(--item-color, var(--color-dark));
+      box-shadow: 0 6px 18px rgba(7, 59, 76, 0.12);
+      transform: scale(1.02);
+    }
+
+    /* Confeito M&M estilizado */
+    .mm-candy {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.35rem;
+      color: #ffffff;
+      text-transform: lowercase;
+      position: relative;
+      box-shadow: 
+        inset -4px -5px 8px rgba(0, 0, 0, 0.22),
+        inset 4px 5px 8px rgba(255, 255, 255, 0.35),
+        0 4px 10px rgba(7, 59, 76, 0.18);
+      user-select: none;
+    }
+
+    .mm-candy::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 9px;
+      width: 11px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.45);
+      transform: rotate(-32deg);
+    }
+
+    .mm-candy.dark-text {
+      color: var(--color-dark);
+    }
+
+    .legend-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .legend-title {
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--color-dark);
+      line-height: 1.2;
+    }
+
+    .legend-sub {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Modal de Resultado */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(7, 59, 76, 0.68);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 90;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .result-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 470px;
+      border-radius: 32px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(7, 59, 76, 0.4);
+      transform: scale(0.85) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-backdrop.open .result-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .result-banner {
+      padding: 2.1rem 1.5rem 1.75rem;
+      color: #ffffff;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .result-banner.dark-text {
+      color: var(--color-dark);
+    }
+
+    .result-mm-big {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.22);
+      border: 4px solid rgba(255, 255, 255, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 0.85rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      animation: bounceCandy 1.4s infinite ease-in-out;
+    }
+
+    .result-banner.dark-text .result-mm-big {
+      border-color: rgba(7, 59, 76, 0.35);
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    @keyframes bounceCandy {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(6deg); }
+    }
+
+    .result-badge {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.18);
+      margin-bottom: 0.5rem;
+    }
+
+    .result-banner.dark-text .result-badge {
+      background: rgba(7, 59, 76, 0.12);
+    }
+
+    .result-category-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .result-category-sub {
+      font-size: 0.98rem;
+      font-weight: 700;
+      opacity: 0.92;
+      margin-top: 0.25rem;
+    }
+
+    .result-body {
+      padding: 1.65rem 1.75rem 1.85rem;
+    }
+
+    .prompt-box {
+      background: #f4f7f9;
+      border-radius: 20px;
+      padding: 1.2rem 1.25rem;
+      border: 2px dashed rgba(7, 59, 76, 0.16);
+      margin-bottom: 1.35rem;
+    }
+
+    .prompt-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-blue);
+      margin-bottom: 0.45rem;
+      display: block;
+    }
+
+    .prompt-text {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--color-dark);
+      line-height: 1.45;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      background: #eef3f6;
+      color: var(--color-dark);
+      border: none;
+      border-radius: 999px;
+      padding: 0.8rem 1.35rem;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 0.98rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-secondary:hover {
+      background: #dfe8ed;
+    }
+
+    .btn-primary-modal {
+      background: var(--color-dark);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 0.8rem 1.65rem;
+      font-family: 'Fredoka', sans-serif;
+      font-weight: 600;
+      font-size: 0.98rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn-primary-modal:hover {
+      background: var(--color-blue);
+      transform: translateY(-2px);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Canvas de Confetes -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Cabeçalho -->
+  <header>
+    <div class="top-controls">
+      <button id="sound-toggle" class="pill-btn active" title="Alternar efeitos sonoros">
+        <span id="sound-icon">🔊</span> <span id="sound-label">Som Ativado</span>
+      </button>
+      <button id="lang-toggle" class="pill-btn" title="Alternar idioma de destaque">
+        🌎 <span id="lang-label">PT-BR / EN</span>
+      </button>
+    </div>
+
+    <h1>
+      <span class="highlight-pink">M&amp;M</span> Challenge 
+      <span class="highlight-blue">4 U</span> and Ur 
+      <span class="highlight-green">Bestie!</span>
+    </h1>
+    <p class="subtitle" id="subtitle-text">Gire a roleta, pegue seu M&amp;M e encare o desafio com seu melhor amigo!</p>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="main-grid">
+    
+    <!-- Coluna da Roleta -->
+    <section class="wheel-section">
+      <div class="wheel-wrapper">
+        <!-- Ponteiro SVG no Topo -->
+        <svg id="wheel-pointer" class="wheel-pointer" viewBox="0 0 50 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M25 58L6 24C2.5 17.5 7 6 16 6H34C43 6 47.5 17.5 44 24L25 58Z" fill="#073b4c" stroke="#ffffff" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="25" cy="18" r="6" fill="#ffd166"/>
+        </svg>
+
+        <!-- Canvas da Roleta -->
+        <canvas id="wheel-canvas"></canvas>
+
+        <!-- Botão Central -->
+        <button id="center-spin-btn" class="center-spin-btn" aria-label="Girar roleta">
+          GIRAR
+        </button>
+      </div>
+
+      <button id="main-spin-btn" class="main-spin-cta">
+        <span>🎡</span> <span id="spin-btn-text">GIRAR ROLETA</span>
+      </button>
+    </section>
+
+    <!-- Coluna da Legenda -->
+    <aside class="legend-card">
+      <div class="legend-header">
+        <h2 id="legend-heading">🍬 Tabela do Desafio</h2>
+        <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-blue);">6 Cores</span>
+      </div>
+      <div class="legend-list" id="legend-list">
+        <!-- Preenchido via JavaScript -->
+      </div>
+    </aside>
+
+  </main>
+
+  <footer>
+    <p>Toque na roleta ou no botão para sortear • Feito para jogar com seu Bestie 💛</p>
+  </footer>
+
+  <!-- Modal de Resultado -->
+  <div id="result-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="result-card">
+      <div id="result-banner" class="result-banner">
+        <div class="result-mm-big">m</div>
+        <span class="result-badge" id="result-color-name">COR SORTEADA</span>
+        <h3 class="result-category-title" id="modal-title">TRUTH</h3>
+        <p class="result-category-sub" id="modal-subtitle">Verdade</p>
+      </div>
+
+      <div class="result-body">
+        <div class="prompt-box">
+          <span class="prompt-label" id="prompt-box-label">💡 Sugestão para jogar agora:</span>
+          <p class="prompt-text" id="prompt-text">Qual foi o maior mico que você já pagou na frente de alguém que gostava?</p>
+        </div>
+
+        <div class="modal-actions">
+          <button id="new-prompt-btn" class="btn-secondary">
+            🔄 Outra ideia
+          </button>
+          <button id="close-modal-btn" class="btn-primary-modal">
+            ✨ Continuar Jogando
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Configuração dos 6 itens do Desafio M&M
+     * Mapeados fielmente à imagem e usando exclusivamente a paleta solicitada:
+     * #ef476f, #f78c6b, #ffd166, #06d6a0, #118ab2, #073b4c
+     */
+    const SEGMENTS = [
+      {
+        id: 'orange',
+        color: '#f78c6b',
+        darkText: false,
+        colorLabelPt: 'M&M Laranja',
+        colorLabelEn: 'Orange M&M',
+        enTitle: 'TRUTH',
+        ptTitle: 'Verdade',
+        wheelShortPt: 'VERDADE',
+        wheelShortEn: 'TRUTH',
+        promptsPt: [
+          'Qual foi a maior mentira que você já contou para escapar de um compromisso?',
+          'Quem é a pessoa que você mais stalkeia nas redes sociais?',
+          'Qual foi o maior mico que você já pagou na nossa frente ou na escola/trabalho?',
+          'Se você pudesse apagar uma lembrança embaraçosa da sua vida, qual seria?',
+          'Qual é a sua opinião impopular que quase ninguém concorda?'
+        ],
+        promptsEn: [
+          'What is the biggest lie you ever told to get out of plans?',
+          'Who is the person you stalk the most on social media?',
+          'What is the most embarrassing thing that ever happened to you in public?',
+          'If you could erase one awkward memory forever, which one would it be?',
+          'What is an unpopular opinion you secretly stand by?'
+        ]
+      },
+      {
+        id: 'pink-red',
+        color: '#ef476f',
+        darkText: false,
+        colorLabelPt: 'M&M Rosa/Vermelho',
+        colorLabelEn: 'Red/Pink M&M',
+        enTitle: 'DARE',
+        ptTitle: 'Desafio',
+        wheelShortPt: 'DESAFIO',
+        wheelShortEn: 'DARE',
+        promptsPt: [
+          'Deixe seu bestie escolher uma foto da sua galeria para postar nos Stories por 1 hora!',
+          'Mande um áudio cantando o refrão da sua música favorita para a 3ª pessoa do seu WhatsApp.',
+          'Fale com um sotaque engraçado até a próxima rodada acabar.',
+          'Faça 15 polichinelos agora mesmo enquanto elogia o seu bestie sem parar!',
+          'Mostre o seu histórico recente de pesquisas no celular.'
+        ],
+        promptsEn: [
+          'Let your bestie pick a photo from your camera roll to post on your Story!',
+          'Send a voice note singing your favorite chorus to the 3rd person in your chat list.',
+          'Speak in a funny accent until the next round is over.',
+          'Do 15 jumping jacks right now while complimenting your bestie non-stop!',
+          'Show your most recent search history on your phone.'
+        ]
+      },
+      {
+        id: 'yellow',
+        color: '#ffd166',
+        darkText: true, // Contraste alto com #073b4c sobre amarelo
+        colorLabelPt: 'M&M Amarelo',
+        colorLabelEn: 'Yellow M&M',
+        enTitle: '2 TRUTHS AND 1 LIE',
+        ptTitle: '2 Verdades e 1 Mentira',
+        wheelShortPt: '2 VERDADES E 1 MENTIRA',
+        wheelShortEn: '2 TRUTHS & 1 LIE',
+        promptsPt: [
+          'Conte 3 histórias rápidas sobre algo que você já fez na infância — seu bestie precisa descobrir qual é a mentira!',
+          'Diga 3 coisas sobre crushes ou encontros passados (2 verdades e 1 mentira).',
+          'Fale 3 talentos ocultos ou manias estranhas que você tem (1 delas deve ser inventada!).',
+          'Conte 3 situações de viagem ou passeios (2 reais e 1 falsa) para o seu amigo adivinhar.'
+        ],
+        promptsEn: [
+          'Tell 3 quick stories from your childhood — your bestie has to guess which one is the lie!',
+          'Share 3 facts about past crushes or dates (2 truths and 1 lie).',
+          'Name 3 hidden talents or weird habits you have (make one up!).',
+          'Tell 3 travel or adventure stories (2 real, 1 fake) and let your bestie guess.'
+        ]
+      },
+      {
+        id: 'green',
+        color: '#06d6a0',
+        darkText: true, // Contraste nítido com #073b4c sobre verde menta vibrante
+        colorLabelPt: 'M&M Verde',
+        colorLabelEn: 'Green M&M',
+        enTitle: 'THIS OR THAT',
+        ptTitle: 'Isso ou Aquilo',
+        wheelShortPt: 'ISSO OU AQUILO',
+        wheelShortEn: 'THIS OR THAT',
+        promptsPt: [
+          'Rodada rápida (5 segundos): Praia ou Montanha? Doce ou Salgado? Madrugar ou Virar a noite?',
+          'Verão eterno ou Inverno eterno? Filmes de terror ou Comédia romântica?',
+          'Viajar para o passado ou Viajar para o futuro? Ser famoso ou Ser rico anônimo?',
+          'Café ou Chá? Cachorro ou Gato? Festa agitada ou Noite de filmes em casa?'
+        ],
+        promptsEn: [
+          'Rapid fire (5 seconds): Beach or Mountains? Sweet or Savory? Early bird or Night owl?',
+          'Endless Summer or Endless Winter? Horror movies or Rom-coms?',
+          'Travel to the past or Travel to the future? Be famous or Be rich & unknown?',
+          'Coffee or Tea? Dogs or Cats? Big party or Cozy movie night at home?'
+        ]
+      },
+      {
+        id: 'blue',
+        color: '#118ab2',
+        darkText: false,
+        colorLabelPt: 'M&M Azul',
+        colorLabelEn: 'Blue M&M',
+        enTitle: 'WOULD U RATHER',
+        ptTitle: 'O Que Você Prefere',
+        wheelShortPt: 'O QUE VOCÊ PREFERE',
+        wheelShortEn: 'WOULD U RATHER',
+        promptsPt: [
+          'Você prefere nunca mais poder usar redes sociais ou nunca mais poder ouvir música?',
+          'Você prefere ter que falar tudo o que pensa em voz alta ou nunca mais poder falar nada?',
+          'Você prefere viajar de graça para qualquer lugar do mundo sozinho ou fazer uma viagem simples com seu bestie?',
+          'Você prefere sempre chegar 1 hora atrasado ou sempre chegar 2 horas adiantado em tudo?'
+        ],
+        promptsEn: [
+          'Would you rather never use social media again or never listen to music again?',
+          'Would you rather have to say everything on your mind out loud or never speak again?',
+          'Would you rather travel anywhere in the world for free alone or take a simple trip with your bestie?',
+          'Would you rather always be 1 hour late or always be 2 hours early to everything?'
+        ]
+      },
+      {
+        id: 'dark',
+        color: '#073b4c',
+        darkText: false,
+        colorLabelPt: 'M&M Azul Petróleo',
+        colorLabelEn: 'Deep Teal M&M',
+        enTitle: 'TELL A SECRET',
+        ptTitle: 'Conte um Segredo',
+        wheelShortPt: 'CONTE UM SEGREDO',
+        wheelShortEn: 'TELL A SECRET',
+        promptsPt: [
+          'Conte um segredo que você nunca contou para quase ninguém (vale algo engraçado ou profundo!).',
+          'Qual foi uma coisa que você fez escondido e ninguém nunca descobriu até hoje?',
+          'Confesse um medo bobo ou uma mania secreta que você tem quando está sozinho em casa.',
+          'Qual foi a primeira impressão real que você teve quando conheceu o seu bestie?'
+        ],
+        promptsEn: [
+          'Share a secret you have barely told anyone (can be funny or deep!).',
+          'What is something you did in secret that nobody ever found out about?',
+          'Confess a silly fear or a secret habit you have when you are home alone.',
+          'What was your honest first impression when you first met your bestie?'
+        ]
+      }
+    ];
+
+    // Estado da Aplicação
+    let currentRotation = 0; // em radianos
+    let isSpinning = false;
+    let soundEnabled = true;
+    let langMode = 'PT'; // 'PT' (Português com subtítulo EN) ou 'EN' (Inglês com subtítulo PT)
+    let activeWinnerIndex = null;
+    let currentPromptIndex = 0;
+
+    // Elementos DOM
+    const canvas = document.getElementById('wheel-canvas');
+    const ctx = canvas.getContext('2d');
+    const pointerEl = document.getElementById('wheel-pointer');
+    const centerSpinBtn = document.getElementById('center-spin-btn');
+    const mainSpinBtn = document.getElementById('main-spin-btn');
+    const legendListEl = document.getElementById('legend-list');
+    const soundToggleBtn = document.getElementById('sound-toggle');
+    const langToggleBtn = document.getElementById('lang-toggle');
+
+    // Elementos do Modal
+    const resultModal = document.getElementById('result-modal');
+    const resultBanner = document.getElementById('result-banner');
+    const resultColorName = document.getElementById('result-color-name');
+    const modalTitle = document.getElementById('modal-title');
+    const modalSubtitle = document.getElementById('modal-subtitle');
+    const promptText = document.getElementById('prompt-text');
+    const newPromptBtn = document.getElementById('new-prompt-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+
+    // ==========================================
+    // SISTEMA DE ÁUDIO (Web Audio API - Sem URLs externas)
+    // ==========================================
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playTickSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.045);
+
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.045);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+      } catch (e) {
+        // Ignora bloqueios de áudio silenciosamente
+      }
+    }
+
+    function playWinSound() {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const startTime = audioCtx.currentTime + idx * 0.085;
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, startTime);
+
+          gain.gain.setValueAtTime(0.001, startTime);
+          gain.gain.linearRampToValueAtTime(0.22, startTime + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.38);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(startTime);
+          osc.stop(startTime + 0.4);
+        });
+      } catch (e) {
+        // Ignora falhas de áudio
+      }
+    }
+
+    // ==========================================
+    // RENDERIZAÇÃO DA LEGENDA E TEXTOS
+    // ==========================================
+    function renderLegend() {
+      legendListEl.innerHTML = '';
+      SEGMENTS.forEach((seg, index) => {
+        const item = document.createElement('div');
+        item.className = 'legend-item' + (activeWinnerIndex === index ? ' active-winner' : '');
+        item.style.setProperty('--item-color', seg.color);
+        item.title = 'Clique para ver uma sugestão desta cor';
+
+        const primaryTitle = langMode === 'PT' ? `${seg.ptTitle} (${seg.enTitle})` : `${seg.enTitle} (${seg.ptTitle})`;
+        const colorSub = langMode === 'PT' ? seg.colorLabelPt : seg.colorLabelEn;
+
+        item.innerHTML = `
+          <div class="mm-candy ${seg.darkText ? 'dark-text' : ''}" style="background-color: ${seg.color};">m</div>
+          <div class="legend-text">
+            <span class="legend-title">${primaryTitle}</span>
+            <span class="legend-sub">${colorSub}</span>
+          </div>
+        `;
+
+        // Permite clicar no item da legenda para abrir um desafio daquela cor diretamente
+        item.addEventListener('click', () => {
+          if (isSpinning) return;
+          activeWinnerIndex = index;
+          renderLegend();
+          openResultModal(index);
+        });
+
+        legendListEl.appendChild(item);
+      });
+    }
+
+    function updateUILanguage() {
+      const subtitleText = document.getElementById('subtitle-text');
+      const spinBtnText = document.getElementById('spin-btn-text');
+      const legendHeading = document.getElementById('legend-heading');
+      const promptBoxLabel = document.getElementById('prompt-box-label');
+      const langLabel = document.getElementById('lang-label');
+
+      if (langMode === 'PT') {
+        langLabel.textContent = 'Português (BR)';
+        subtitleText.textContent = 'Gire a roleta, pegue seu M&M e encare o desafio com seu melhor amigo!';
+        centerSpinBtn.textContent = 'GIRAR';
+        spinBtnText.textContent = 'GIRAR ROLETA';
+        legendHeading.textContent = '🍬 Tabela do Desafio';
+        promptBoxLabel.textContent = '💡 Sugestão para jogar agora:';
+        newPromptBtn.textContent = '🔄 Outra ideia';
+        closeModalBtn.textContent = '✨ Continuar Jogando';
+      } else {
+        langLabel.textContent = 'English (Original)';
+        subtitleText.textContent = 'Spin the wheel, grab your M&M, and take on the challenge with your bestie!';
+        centerSpinBtn.textContent = 'SPIN';
+        spinBtnText.textContent = 'SPIN THE WHEEL';
+        legendHeading.textContent = '🍬 Challenge Legend';
+        promptBoxLabel.textContent = '💡 Prompt idea to play now:';
+        newPromptBtn.textContent = '🔄 Another idea';
+        closeModalBtn.textContent = '✨ Keep Playing';
+      }
+
+      renderLegend();
+      drawWheel();
+    }
+
+    // ==========================================
+    // DESENHO DA ROLETA NO CANVAS (High-DPI)
+    // ==========================================
+    function resizeWheelCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const size = Math.max(260, rect.width - 24);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawWheel();
+    }
+
+    function wrapCanvasText(context, text, maxWidth) {
+      const words = text.split(' ');
+      const lines = [];
+      let currentLine = words[0];
+
+      for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        const width = context.measureText(currentLine + ' ' + word).width;
+        if (width < maxWidth) {
+          currentLine += ' ' + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      lines.push(currentLine);
+      return lines;
+    }
+
+    function drawWheel() {
+      const dpr = window.devicePixelRatio || 1;
+      const size = canvas.width / dpr;
+      const center = size / 2;
+      const radius = center - 4;
+      const numSlices = SEGMENTS.length;
+      const sliceAngle = (2 * Math.PI) / numSlices;
+
+      ctx.clearRect(0, 0, size, size);
+
+      // Desenha cada fatia
+      SEGMENTS.forEach((seg, i) => {
+        const startAngle = currentRotation + i * sliceAngle;
+        const endAngle = startAngle + sliceAngle;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, startAngle, endAngle);
+        ctx.closePath();
+
+        ctx.fillStyle = seg.color;
+        ctx.fill();
+
+        // Borda branca suave entre as fatias
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        // Brilho sutil estilo confeito M&M na borda externa
+        const grad = ctx.createRadialGradient(center, center, radius * 0.25, center, center, radius);
+        grad.addColorStop(0, 'rgba(255,255,255,0.08)');
+        grad.addColorStop(0.85, 'rgba(255,255,255,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,0.14)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Texto da fatia
+        const midAngle = startAngle + sliceAngle / 2;
+        ctx.translate(center, center);
+        ctx.rotate(midAngle);
+
+        const textColor = seg.darkText ? '#073b4c' : '#ffffff';
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const fontSize = Math.max(12, Math.round(size * 0.036));
+        ctx.font = `700 ${fontSize}px 'Fredoka', sans-serif`;
+
+        const label = langMode === 'PT' ? seg.wheelShortPt : seg.wheelShortEn;
+        const textDist = radius * 0.62;
+        const maxTextWidth = radius * 0.44;
+        const lines = wrapCanvasText(ctx, label, maxTextWidth);
+        const lineHeight = fontSize * 1.18;
+
+        lines.forEach((line, lineIdx) => {
+          const offsetY = (lineIdx - (lines.length - 1) / 2) * lineHeight;
+          ctx.fillText(line, textDist, offsetY);
+        });
+
+        // Pequena marca "m" decorativa perto da borda
+        ctx.font = `700 ${Math.round(fontSize * 0.9)}px 'Fredoka', sans-serif`;
+        ctx.globalAlpha = 0.42;
+        ctx.fillText('m', radius * 0.88, 0);
+        ctx.globalAlpha = 1;
+
+        ctx.restore();
+      });
+
+      // Pinos brancos na borda externa entre as fatias
+      for (let i = 0; i < numSlices; i++) {
+        const pinAngle = currentRotation + i * sliceAngle;
+        const px = center + Math.cos(pinAngle) * (radius - 10);
+        const py = center + Math.sin(pinAngle) * (radius - 10);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 4.5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#073b4c';
+        ctx.stroke();
+      }
+    }
+
+    // ==========================================
+    // LÓGICA DE GIRO E DETECÇÃO DO VENCEDOR
+    // ==========================================
+    function getSegmentAtTopPointer(rotation) {
+      const numSlices = SEGMENTS.length;
+      const sliceAngle = (2 * Math.PI) / numSlices;
+      // O ponteiro está no topo: ângulo -PI/2 (ou 3*PI/2)
+      const pointerAngle = (3 * Math.PI) / 2;
+      const normalizedRot = ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const relativeAngle = (pointerAngle - normalizedRot + 2 * Math.PI) % (2 * Math.PI);
+      return Math.floor(relativeAngle / sliceAngle) % numSlices;
+    }
+
+    function spinWheel() {
+      if (isSpinning) return;
+      isSpinning = true;
+      centerSpinBtn.disabled = true;
+      mainSpinBtn.disabled = true;
+      activeWinnerIndex = null;
+      renderLegend();
+
+      initAudio();
+
+      // Duração entre 4.2s e 5.2s e 6 a 9 voltas completas + ângulo aleatório
+      const duration = 4500 + Math.random() * 800;
+      const extraSpins = (6 + Math.floor(Math.random() * 4)) * 2 * Math.PI;
+      const randomOffset = Math.random() * 2 * Math.PI;
+      const startRotation = currentRotation;
+      const targetRotation = startRotation + extraSpins + randomOffset;
+
+      let startTime = null;
+      let lastSliceIndex = getSegmentAtTopPointer(startRotation);
+
+      // Easing quintic ease-out para desaceleração suave e realista
+      function easeOutQuint(t) {
+        return 1 - Math.pow(1 - t, 5);
+      }
+
+      function animateSpin(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeOutQuint(progress);
+
+        currentRotation = startRotation + (targetRotation - startRotation) * eased;
+        drawWheel();
+
+        // Verifica passagem de fatia sob o ponteiro para efeito visual + som de clique
+        const currentSlice = getSegmentAtTopPointer(currentRotation);
+        if (currentSlice !== lastSliceIndex) {
+          lastSliceIndex = currentSlice;
+          playTickSound();
+          pointerEl.classList.add('tick');
+          clearTimeout(pointerEl._tickTimeout);
+          pointerEl._tickTimeout = setTimeout(() => {
+            pointerEl.classList.remove('tick');
+          }, 70);
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animateSpin);
+        } else {
+          // Finalizou o giro
+          isSpinning = false;
+          centerSpinBtn.disabled = false;
+          mainSpinBtn.disabled = false;
+
+          const winnerIdx = getSegmentAtTopPointer(currentRotation);
+          activeWinnerIndex = winnerIdx;
+          renderLegend();
+          playWinSound();
+          launchConfetti();
+
+          setTimeout(() => {
+            openResultModal(winnerIdx);
+          }, 320);
+        }
+      }
+
+      requestAnimationFrame(animateSpin);
+    }
+
+    // ==========================================
+    // MODAL DE RESULTADO E SUGESTÕES
+    // ==========================================
+    function openResultModal(index) {
+      const seg = SEGMENTS[index];
+      resultBanner.style.backgroundColor = seg.color;
+      if (seg.darkText) {
+        resultBanner.classList.add('dark-text');
+      } else {
+        resultBanner.classList.remove('dark-text');
+      }
+
+      resultColorName.textContent = langMode === 'PT' ? seg.colorLabelPt : seg.colorLabelEn;
+      modalTitle.textContent = langMode === 'PT' ? seg.ptTitle.toUpperCase() : seg.enTitle;
+      modalSubtitle.textContent = langMode === 'PT' ? seg.enTitle : seg.ptTitle;
+
+      const prompts = langMode === 'PT' ? seg.promptsPt : seg.promptsEn;
+      currentPromptIndex = Math.floor(Math.random() * prompts.length);
+      promptText.textContent = prompts[currentPromptIndex];
+
+      resultModal.classList.add('open');
+    }
+
+    function cyclePrompt() {
+      if (activeWinnerIndex === null) return;
+      const seg = SEGMENTS[activeWinnerIndex];
+      const prompts = langMode === 'PT' ? seg.promptsPt : seg.promptsEn;
+      currentPromptIndex = (currentPromptIndex + 1) % prompts.length;
+      promptText.textContent = prompts[currentPromptIndex];
+    }
+
+    function closeResultModal() {
+      resultModal.classList.remove('open');
+    }
+
+    // ==========================================
+    // EFEITO DE CONFETES
+    // ==========================================
+    const confettiCanvas = document.getElementById('confetti-canvas');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+    let confettiAnimId = null;
+
+    function resizeConfettiCanvas() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+
+    function launchConfetti() {
+      resizeConfettiCanvas();
+      const palette = ['#ef476f', '#f78c6b', '#ffd166', '#06d6a0', '#118ab2', '#073b4c'];
+      confettiParticles = [];
+
+      for (let i = 0; i < 110; i++) {
+        confettiParticles.push({
+          x: window.innerWidth * (0.2 + Math.random() * 0.6),
+          y: window.innerHeight * 0.35,
+          vx: (Math.random() - 0.5) * 14,
+          vy: -Math.random() * 12 - 4,
+          size: Math.random() * 8 + 5,
+          color: palette[Math.floor(Math.random() * palette.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 12,
+          shape: Math.random() > 0.4 ? 'circle' : 'rect'
+        });
+      }
+
+      if (!confettiAnimId) {
+        updateConfetti();
+      }
+    }
+
+    function updateConfetti() {
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      let alive = false;
+
+      confettiParticles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.38; // gravidade
+        p.vx *= 0.99;
+        p.rotation += p.vRot;
+
+        if (p.y < confettiCanvas.height + 20) {
+          alive = true;
+          confettiCtx.save();
+          confettiCtx.translate(p.x, p.y);
+          confettiCtx.rotate((p.rotation * Math.PI) / 180);
+          confettiCtx.fillStyle = p.color;
+
+          if (p.shape === 'circle') {
+            confettiCtx.beginPath();
+            confettiCtx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+            confettiCtx.fill();
+          } else {
+            confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          }
+          confettiCtx.restore();
+        }
+      });
+
+      if (alive) {
+        confettiAnimId = requestAnimationFrame(updateConfetti);
+      } else {
+        confettiAnimId = null;
+        confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+
+    // ==========================================
+    // EVENT LISTENERS E INICIALIZAÇÃO
+    // ==========================================
+    centerSpinBtn.addEventListener('click', spinWheel);
+    mainSpinBtn.addEventListener('click', spinWheel);
+    canvas.addEventListener('click', spinWheel);
+
+    soundToggleBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      const label = document.getElementById('sound-label');
+      if (soundEnabled) {
+        soundToggleBtn.classList.add('active');
+        icon.textContent = '🔊';
+        label.textContent = langMode === 'PT' ? 'Som Ativado' : 'Sound On';
+      } else {
+        soundToggleBtn.classList.remove('active');
+        icon.textContent = '🔇';
+        label.textContent = langMode === 'PT' ? 'Sem Som' : 'Muted';
+      }
+    });
+
+    langToggleBtn.addEventListener('click', () => {
+      langMode = langMode === 'PT' ? 'EN' : 'PT';
+      const label = document.getElementById('sound-label');
+      label.textContent = soundEnabled
+        ? (langMode === 'PT' ? 'Som Ativado' : 'Sound On')
+        : (langMode === 'PT' ? 'Sem Som' : 'Muted');
+      updateUILanguage();
+    });
+
+    newPromptBtn.addEventListener('click', cyclePrompt);
+    closeModalBtn.addEventListener('click', closeResultModal);
+    resultModal.addEventListener('click', (e) => {
+      if (e.target === resultModal) closeResultModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && resultModal.classList.contains('open')) {
+        closeResultModal();
+      } else if ((e.key === ' ' || e.key === 'Enter') && !resultModal.classList.contains('open') && document.activeElement === document.body) {
+        e.preventDefault();
+        spinWheel();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      resizeWheelCanvas();
+      resizeConfettiCanvas();
+    });
+
+    window.onload = function () {
+      updateUILanguage();
+      resizeWheelCanvas();
+      resizeConfettiCanvas();
+    };
+  </script>
+</body>
+</html>
